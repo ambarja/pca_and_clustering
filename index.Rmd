@@ -24,6 +24,8 @@ library(raster)
 library(ggcorrplot)
 library(cptcity)
 library(cowplot)
+library(colorspace)
+library(rasterVis)
 ```
 
 # Reading of data
@@ -31,6 +33,69 @@ library(cowplot)
 ```{r message=FALSE,warning=FALSE}
 brick_sandiego <- brick('SanDiego_test.tif')
 names(brick_sandiego) <-  c('nldc','tree','imp','ndvi','tmax','tmin')
+
+```
+
+
+# Simple visualization of bands 
+
+```{r message=FALSE,warning=FALSE}
+nldc <- levelplot(brick_sandiego$nldc,
+          col.regions = cpt('mpl_magma',rev = TRUE),
+          main = "nldc",
+          margin = FALSE,
+          xlab = '',
+          ylab = '' ,
+          colorkey = list(space = 'bottom')
+          )
+
+tree <- levelplot(brick_sandiego$tree,
+          col.regions = cpt('ocal_green',rev = TRUE),
+          main = "%Tree",
+          margin = FALSE,
+          xlab = '',
+          ylab = '' ,
+          colorkey = list(space = 'bottom')
+          )
+
+imp <- levelplot(brick_sandiego$imp,
+          col.regions = cpt('grass_evi'),
+          main = "Imperious",
+          margin = FALSE,
+          xlab = '',
+          ylab = '' ,
+          colorkey = list(space = 'bottom')
+          )
+
+
+ndvi <- levelplot(brick_sandiego$ndvi,
+          col.regions = cpt('grass_ndvi'),
+          main = "NDVI",
+          margin = FALSE,
+          xlab = '',
+          ylab = '' ,
+          colorkey = list(space = 'bottom')
+          )
+
+tmax <- levelplot(brick_sandiego$tmax,
+          col.regions = cpt('grass_bcyr'),
+          main = "Tmax",
+          margin = FALSE,
+          xlab = '',
+          ylab = '' ,
+          colorkey = list(space = 'bottom')
+          )
+
+tmin <- levelplot(brick_sandiego$tmin,
+          col.regions = cpt('grass_bcyr'),
+          main = "Tmin",
+          margin = FALSE,
+          xlab = '',
+          ylab = '' ,
+          colorkey = list(space = 'bottom')
+          )
+
+plot_grid(nldc, tree, imp, ndvi, tmax, tmin)
 
 ```
 
@@ -96,9 +161,14 @@ $$PC_{3} = -0.3101xndlc +0.1869ximp + 0.1869xtree + + 0.1859xndvi -0.3966 xtmax 
 pc1 <- eingvector %>% 
    as_tibble() %>%
    mutate(name = rownames(eingvector)) %>% 
-   ggplot(aes(x = PC1,y = name, fill = PC1)) + 
-   geom_bar(stat = 'identity') +
-   scale_fill_continuous('loadings') + 
+   ggplot(aes(x = PC1,
+              y = name,
+              fill = PC1)) + 
+   geom_bar(stat = 'identity',
+            color = "black",
+            lwd = 0.2,
+            alpha = 0.9) +
+   scale_fill_continuous_diverging(palette = "Blue-Red 3") +
    theme_minimal() + 
    labs(title = 'PC1-Without rotation varimax',
         x = ' ',
@@ -113,8 +183,11 @@ pc2 <- eingvector %>%
    as_tibble() %>%
    mutate(name = rownames(eingvector)) %>% 
    ggplot(aes(x = PC2,y = name, fill = PC2)) + 
-   geom_bar(stat = 'identity') +
-   scale_fill_continuous('loadings') + 
+    geom_bar(stat = 'identity',
+            color = "black",
+            lwd = 0.2,
+            alpha = 0.9) +
+   scale_fill_continuous_diverging(palette = "Blue-Red 3") +
    theme_minimal() + 
    labs(title = 'PC2-Without rotation varimax',
         x = ' ',
@@ -129,8 +202,11 @@ pc3 <- eingvector %>%
    as_tibble() %>%
    mutate(name = rownames(eingvector)) %>% 
    ggplot(aes(x = PC3,y = name, fill = PC3)) + 
-   geom_bar(stat = 'identity') +
-   scale_fill_continuous('loadings') + 
+  geom_bar(stat = 'identity',
+            color = "black",
+            lwd = 0.2,
+            alpha = 0.9) +
+   scale_fill_continuous_diverging(palette = "Blue-Red 3") +
    theme_minimal() + 
    labs(title = 'PC3-Without rotation varimax',
         x = ' ',
@@ -181,8 +257,11 @@ names(loadings_rot)[1:6] <- sprintf('rot%s',1:6)
 
 rot1 <- loadings_rot %>% 
    ggplot(aes(x = rot1 ,y = name, fill = rot1)) + 
-   geom_bar(stat = 'identity') +
-   scale_fill_continuous('loadings') + 
+   geom_bar(stat = 'identity',
+            color = "black",
+            lwd = 0.2,
+            alpha = 0.9) +
+   scale_fill_continuous_diverging(palette = "Blue-Red 3") +
    theme_minimal() + 
    labs(title = 'PC1-With rotation varimax',
         x = ' ',
@@ -195,8 +274,11 @@ rot1 <- loadings_rot %>%
 
 rot2 <- loadings_rot %>% 
    ggplot(aes(x = rot2,y = name, fill = rot2)) + 
-   geom_bar(stat = 'identity') +
-   scale_fill_continuous('loadings') + 
+   geom_bar(stat = 'identity',
+            color = "black",
+            lwd = 0.2,
+            alpha = 0.9) +
+   scale_fill_continuous_diverging(palette = "Blue-Red 3") +
    theme_minimal() + 
    labs(title = 'PC2-With rotation varimax',
         x = ' ',
@@ -209,8 +291,11 @@ rot2 <- loadings_rot %>%
 
 rot3 <- loadings_rot %>% 
    ggplot(aes(x = rot3,y = name, fill = rot3)) + 
-   geom_bar(stat = 'identity') +
-   scale_fill_continuous('loadings') + 
+   geom_bar(stat = 'identity',
+            color = "black",
+            lwd = 0.2,
+            alpha = 0.9) +
+   scale_fill_continuous_diverging(palette = "Blue-Red 3") +
    theme_minimal() + 
    labs(title = 'PC3-With rotation varimax',
         x = ' ',
@@ -255,9 +340,37 @@ sandiego_newraster <- rasterFromXYZ(
 
 # Plot PCA
 ```{r message=FALSE,warning=FALSE}
-plot(sandiego_newraster)
-# writeRaster(sandiego_newraster,'sandiego_pca.tif')
+pc1 <- levelplot(sandiego_newraster$PC1,
+          col.regions = cpt('mpl_magma',rev = TRUE),
+          main = "PC1",
+          margin = FALSE,
+          xlab = '',
+          ylab = '' ,
+          colorkey = list(space = 'bottom')
+          )
+
+pc2 <- levelplot(sandiego_newraster$PC2,
+          col.regions = cpt('mpl_viridis',rev = TRUE),
+          main = "PC2",
+          margin = FALSE,
+          xlab = '',
+          ylab = '' ,
+          colorkey = list(space = 'bottom')
+          )
+
+pc3 <- levelplot(sandiego_newraster$PC3,
+          col.regions = cpt('mpl_plasma'),
+          main = "PC3",
+          margin = FALSE,
+          xlab = '',
+          ylab = '' ,
+          colorkey = list(space = 'bottom')
+          )
+
+plot_grid(pc1, pc2, pc3,ncol = 3)
+
 ```  
+
 
 # Clustering Analysis 
 ```{r message=FALSE,warning=FALSE}
@@ -265,6 +378,18 @@ data_cluster <- df_sandiego %>% dplyr::select(-c(x,y))
 valid <- apply(data_cluster, MARGIN = 1, FUN = function(x){any(is.na(x)) == FALSE})
 head(valid)
 ```  
+
+<!-- ## Plots of cluster -->
+
+<!-- # ```{r message=FALSE,warning=FALSE} -->
+<!-- # for(i in 1:6) { -->
+<!-- # km_out <- kmeans(data_cluster,center = 6,nstart = 20) -->
+<!-- #       # Plot clusters -->
+<!-- #       plot(x, col = km_out$cluster,  -->
+<!-- #           main = km.out$tot.withinss,  -->
+<!-- #           xlab = "", ylab = "") -->
+<!-- #       } -->
+<!-- # ``` -->
 
 ## Indentifying the best cluster 
 
@@ -307,6 +432,13 @@ kmean_raster <- rasterFromXYZ(
 ## Plot cluster 
 
 ```{r message=FALSE,warning=FALSE}
-plot(kmean_raster)
+levelplot(kmean_raster$km_out.cluster,
+          col.regions = cpt('mpl_viridis'),
+          main = "Kmean - cluster",
+          margin = FALSE,
+          xlab = '',
+          ylab = '' ,
+          colorkey = list(space = 'bottom')
+          )
 ```
 
